@@ -5,21 +5,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
-public class SlideActivity extends Activity implements OnCheckedChangeListener {
+public class HomeActivity extends Activity implements OnCheckedChangeListener {
 
-	protected ImageView imshow;
+	protected ImageView imshow_fadeout;
+	protected ImageView imshow_fadein;
+	private int currentImageIndex;
+	public RadioGroup radGr;
+	
+	int[] imageArray = { R.drawable.conrad1, R.drawable.conrad2,
+			R.drawable.conrad3, R.drawable.conrad4,R.drawable.conrad5,R.drawable.conrad6};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,19 +51,24 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 		final ImageButton settingBtn = (ImageButton) findViewById(R.id.settingBtn);
 		
 		
-		final RadioGroup radGr = (RadioGroup) findViewById(R.id.radioGr_slideImage);
+		radGr = (RadioGroup) findViewById(R.id.radioGr_slideImage);
 
-		radGr.setOnCheckedChangeListener(this);
-		imshow = (ImageView) findViewById(R.id.imageSlideshow);
-		final int[] imageArray = { R.drawable.conrad1, R.drawable.conrad2,
-				R.drawable.conrad3, R.drawable.conrad4,R.drawable.conrad5,R.drawable.conrad6};
-		final Handler handler = new Handler();
+		radGr.setOnCheckedChangeListener(HomeActivity.this);
+		
+		imshow_fadeout = (ImageView) findViewById(R.id.imviewSlide1);
+		imshow_fadein = (ImageView) findViewById(R.id.imviewSlide2);
+		
+		
+		initAnimations();
+		animateImage();
+		
+
 		Runnable runnable = new Runnable() {
 			int i = 0;
-
+			
 			@Override
 			public void run() {
-				imshow.setImageResource(imageArray[i]);
+				
 				switch (imageArray[i]) {
 				case R.drawable.conrad1:
 					radGr.check(R.id.radbtn_image1);
@@ -73,22 +90,18 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 					break;
 				default:
 					break;
-				}
-				i++;
-				if (i > imageArray.length - 1) {
-					i = 0;
-				}
-				handler.postDelayed(this, 2000); // for interval...
+							}
+				
 			}
 		};
-		handler.postDelayed(runnable, 2000); // for initial delay..
-
+		
+		
 		personalBtn.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this,
+				Intent intent = new Intent(HomeActivity.this,
 						PersonalPage.class);
 				startActivity(intent);
 			}
@@ -99,7 +112,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this, InfoPage.class);
+				Intent intent = new Intent(HomeActivity.this, InfoPage.class);
 				startActivity(intent);
 				
 			}
@@ -110,7 +123,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this,
+				Intent intent = new Intent(HomeActivity.this,
 						EntertainPage.class);
 				startActivity(intent);
 			}
@@ -121,7 +134,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this, NearbyPage.class);
+				Intent intent = new Intent(HomeActivity.this, NearbyPage.class);
 				startActivity(intent);
 			}
 		});
@@ -131,7 +144,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this,
+				Intent intent = new Intent(HomeActivity.this,
 						BookingPage.class);
 				startActivity(intent);
 			}
@@ -142,7 +155,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this,
+				Intent intent = new Intent(HomeActivity.this,
 						PromotionPage.class);
 				startActivity(intent);
 			}
@@ -153,7 +166,7 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(SlideActivity.this, OtpLogin.class);
+				Intent intent = new Intent(HomeActivity.this, OtpLogin.class);
 				startActivity(intent);
 			}
 		});
@@ -168,19 +181,110 @@ public class SlideActivity extends Activity implements OnCheckedChangeListener {
 			}
 		});
 	}
+	
+	private void animateImage(){
+		imshow_fadeout.setImageResource(imageArray[currentImageIndex]);
+		imshow_fadein.setVisibility(ImageView.GONE);
+		imshow_fadeout.startAnimation(fadeOut);
+		
+		switch (imageArray[currentImageIndex]) {
+		case R.drawable.conrad1:
+			radGr.check(R.id.radbtn_image1);
+			break;
+		case R.drawable.conrad2:
+			radGr.check(R.id.radbtn_image2);
+			break;
+		case R.drawable.conrad3:
+			radGr.check(R.id.radbtn_image3);
+			break;
+		case R.drawable.conrad4:
+			radGr.check(R.id.radbtn_image4);
+			break;
+		case R.drawable.conrad5:
+			radGr.check(R.id.radbtn_image5);
+			break;
+		case R.drawable.conrad6:
+			radGr.check(R.id.radbtn_image6);
+			break;
+		default:
+			break;
+					}
+	}
+	
+	Animation fadeIn, fadeOut;
+	
+	private void initAnimations(){
+		currentImageIndex = 0;
+		fadeIn = new AlphaAnimation(0f, 1f); 
+		fadeIn.setStartOffset(500);
+	    fadeIn.setDuration(3000);
+	    
+		fadeOut = new AlphaAnimation(1f, 0.1f); 
+		fadeOut.setDuration(3500);
+		fadeIn.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {
+				imshow_fadein.setVisibility(ImageView.VISIBLE);
+				
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				
+			}
+		});
+		
+		fadeOut.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {
+				if(currentImageIndex+1 < imageArray.length){
+					imshow_fadein.setImageResource(imageArray[currentImageIndex+1]);	
+				}else{
+					imshow_fadein.setImageResource(imageArray[0]);
+				}
+				imshow_fadein.startAnimation(fadeIn);
+				
+			}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				if(currentImageIndex+1 < imageArray.length){
+					currentImageIndex++;	
+				}else{
+					currentImageIndex = 0;
+				}
+				
+				animateImage();
+			}
+		});
+	}
 
 	private PopupWindow pw;
 	
 	public void initiatePopupWindow(ImageButton button) {
 		try {
-	        LayoutInflater inflater = (LayoutInflater) SlideActivity.this
+	        LayoutInflater inflater = (LayoutInflater) HomeActivity.this
 	                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	     
-	        View layout = inflater.inflate(R.layout.popup_setting,null);
-	        pw = new PopupWindow(layout, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, true);
+	        View layout = inflater.inflate(R.layout.setting,null);
+	        pw = new PopupWindow(layout, LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, true);
 	        pw.setBackgroundDrawable(new BitmapDrawable());
 	        pw.setOutsideTouchable(true);
-	        pw.showAsDropDown(button,-((button.getWidth())/2),0);
+	        pw.showAsDropDown(button, 0, 0);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
